@@ -8,21 +8,21 @@ import { DbModule } from './db/db.module';
 
 @Module({
   imports: [
-    // ClientsModule.register([
-    //   {
-    //     name: 'NOTIFICATION_SERVICE',
-    //     transport: Transport.KAFKA,
-    //     options: {
-    //       client: {
-    //         clientId: 'notification',
-    //         brokers: ['localhost:9092'],
-    //       },
-    //       consumer: {
-    //         groupId: 'NOTIFICATION_SERVICE_GROUP',
-    //       },
-    //     },
-    //   },
-    // ]),
+    ClientsModule.register([
+      {
+        name: 'NOTIFICATION_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'notification',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'NOTIFICATION_SERVICE_GROUP',
+          },
+        },
+      },
+    ]),
     TypeOrmModule.forFeature([userEntity]),
     DbModule,
   ],

@@ -12,7 +12,7 @@ export class AppService {
   constructor(
     @InjectRepository(userEntity)
     private readonly repository: Repository<userEntity>, 
-    // @Inject('NOTIFICATION_SERVICE') private readonly registerClient: ClientKafka,
+    @Inject('NOTIFICATION_SERVICE') private readonly registerClient: ClientKafka,
   ) {}
   getHello(): string {
     return 'Hello World!';
@@ -32,7 +32,7 @@ export class AppService {
     console.log({registerUser});
     
 
-    // this.registerClient.emit('user_registered', new UserRegisteredEvent(user.email));
+    this.registerClient.emit('user_registered', new UserRegisteredEvent(user.email));
 
     return true;
   }
