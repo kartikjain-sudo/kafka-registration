@@ -16,7 +16,13 @@ export class userEntity {
 
     @Column({
         type: 'varchar',
-        unique: true,
+        nullable: false,
+    })
+    salt: string;
+
+    @Column({
+        type: 'varchar',
+        // unique: true,
         nullable: false,
     })
     email: string;
@@ -35,6 +41,7 @@ export class userEntity {
 
     @BeforeInsert()
     async hashPassword() {
-        this.password = await bcrypt.hash(this.password, 10);
+        this.salt = await bcrypt.genSalt();
+        this.password = await bcrypt.hash(this.password, this.salt);
     }
 }

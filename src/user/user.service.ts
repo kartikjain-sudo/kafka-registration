@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -19,19 +19,36 @@ export class UserService {
   async register(registerUser: RegisterUserDto): Promise<boolean> {
     const { email, dob, username, password } = registerUser;
 
+    let duplicate = await this.repository.find({
+      where: { username: username}
+    })
+    
     const user = new userEntity();
 
     user.email = email;
     user.dob = dob;
     user.username = username;
     user.password = password;
+ 
+    // try {
+      console.log("i am here");
+      
+      await this.repository.save(user);
 
-    await this.repository.save(user);
-    console.log({registerUser});
+      this.notificationService.sendMail(user.email);
 
-    this.notificationService.sendMail(user.email);
+      return true;
 
-    return true;
+    // } catch (error) {
+    //   // console.log({error});
+    //   if (error.code === '23505') {
+    //     console.log("here");
+        
+    //     throw new ConflictException("Username not available")
+    //   } else {
+    //     throw new InternalServerErrorException();
+    //   }
+    // }
   }
 
   // create(createUserDto: RegisterUserDto) {

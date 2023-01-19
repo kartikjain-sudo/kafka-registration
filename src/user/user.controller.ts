@@ -10,7 +10,13 @@ export class UserController {
 
   @MessagePattern('register_user')
   async register(registerUserDto: RegisterUserDto): Promise<boolean> {
-    return this.userService.register(registerUserDto);
+    try {
+      return this.userService.register(registerUserDto);
+    } catch (error) {
+      console.log("here again");
+      
+      return false;
+    }
   }
 
   // @MessagePattern('createUser')

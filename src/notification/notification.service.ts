@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
-import { UserRegisteredEvent } from './event/user-registered.event';
+import { SentMailEvent } from './event/sent-email.event';
 
 @Injectable()
 export class NotificationService {
     constructor(
-    @Inject('NOTIFICATION_SERVICE') private readonly registerClient: ClientKafka,
+    @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientKafka,
     ) {}
 
     async sendMail(email: any) {
-        this.registerClient.emit('user_registered', new UserRegisteredEvent(email));
+        this.notificationClient.emit('user_registered', new SentMailEvent(email));
     }
 }
