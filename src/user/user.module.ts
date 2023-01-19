@@ -10,24 +10,9 @@ import { NotificationModule } from 'src/notification/notification.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([userEntity]), 
-    // NotificationModule
-    ClientsModule.register([
-      {
-          name: 'NOTIFICATION_SERVICE',
-          transport: Transport.KAFKA,
-          options: {
-              client: {
-                  clientId: 'notification',
-                  brokers: ['localhost:9092'],
-              },
-              consumer: {
-                  groupId: 'NOTIFICATION_SERVICE_GROUP',
-              },
-          },
-      },
-  ])
+    NotificationModule
   ],
   controllers: [UserController],
-  providers: [UserService, NotificationService]
+  providers: [UserService] // , NotificationService]
 })
 export class UserModule {}

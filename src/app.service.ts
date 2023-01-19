@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { userEntity } from './entity/user.entity';
+import { RegisterUserDto } from './user/dto/register-user.dto';
+import { userEntity } from './user/entities/user.entity';
 import { UserRegisteredEvent } from './event/user-registered.event';
 
 @Injectable()
