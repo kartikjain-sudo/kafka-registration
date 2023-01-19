@@ -4,7 +4,6 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { userEntity } from './entities/user.entity';
 import { NotificationService } from 'src/notification/notification.service';
-import { NotificationModule } from 'src/notification/notification.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
