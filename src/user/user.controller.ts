@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller()
 export class UserController {
@@ -10,6 +11,11 @@ export class UserController {
   @MessagePattern('register_user')
   async register(registerUserDto: RegisterUserDto): Promise<any> {
       return this.userService.register(registerUserDto);
+  }
+
+  @MessagePattern('update_user_password')
+  async updatePassword(updatePasswordDto: UpdatePasswordDto): Promise<any> {
+      return this.userService.updatePassword(updatePasswordDto);
   }
 
   // @MessagePattern('createUser')

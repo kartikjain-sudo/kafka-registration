@@ -2,9 +2,10 @@ import { ConflictException, Inject, Injectable, InternalServerErrorException } f
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
 import { userEntity } from './entities/user.entity';
 import { NotificationService } from 'src/notification/notification.service';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -18,10 +19,6 @@ export class UserService {
 
   async register(registerUser: RegisterUserDto): Promise<any> {
     const { email, dob, username, password } = registerUser;
-
-    let duplicate = await this.repository.find({
-      where: { username: username}
-    })
     
     const user = new userEntity();
 
@@ -39,11 +36,8 @@ export class UserService {
       // return email;
       return {msg: email, statusCode: 201, success: true}
 
-      // TODO: argon2
       // TODO: validation
-      // TODO: exception handling
       // TODO: login
-      // TODO: update password
     } catch (error) {
       // console.log({error});
       if (error.code === '23505') {
@@ -54,6 +48,43 @@ export class UserService {
         // throw new InternalServerErrorException();
         return {msg: error.message, statusCode: 500, success: false}
       }
+    }
+  }
+
+  async updatePassword(updatePasswordDto: UpdatePasswordDto): Promise<any> {
+    const { username, currentPassword, newPassword } = updatePasswordDto;
+
+    let element = await this.repository.findOne({
+      where: { username: username}
+    })
+
+    try {
+
+      if (element !== null) {
+
+        const match = await argon2.verify(element.password, currentPassword);
+
+        if (match) {
+          element.password = await argon2.hash(newPassword, {
+            type: argon2.argon2d,
+            memoryCost: 2 ** 16,
+            hashLength: 50,
+          });
+
+          await this.repository.save(element)
+
+          return {msg: "Password Updated", statusCode: 201, success: true}
+
+        } else {
+          return {msg: "Invalid Password", statusCode: 201, success: true}
+        }
+    } else {
+      return {msg: "Invalid Username", statusCode: 201, success: true}
+    }
+
+
+    } catch (error) {
+      return {msg: error.message, statusCode: 500, success: false}
     }
   }
 
