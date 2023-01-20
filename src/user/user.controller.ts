@@ -2,21 +2,14 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @MessagePattern('register_user')
-  async register(registerUserDto: RegisterUserDto): Promise<boolean> {
-    try {
+  async register(registerUserDto: RegisterUserDto): Promise<any> {
       return this.userService.register(registerUserDto);
-    } catch (error) {
-      console.log("here again");
-      
-      return false;
-    }
   }
 
   // @MessagePattern('createUser')

@@ -16,7 +16,7 @@ export class UserService {
       private readonly notificationService: NotificationService
     ) {}
 
-  async register(registerUser: RegisterUserDto): Promise<boolean> {
+  async register(registerUser: RegisterUserDto): Promise<any> {
     const { email, dob, username, password } = registerUser;
 
     let duplicate = await this.repository.find({
@@ -30,25 +30,31 @@ export class UserService {
     user.username = username;
     user.password = password;
  
-    // try {
-      console.log("i am here");
+    try {
       
       await this.repository.save(user);
 
       this.notificationService.sendMail(user.email);
 
-      return true;
+      // return email;
+      return {msg: email, statusCode: 201, success: true}
 
-    // } catch (error) {
-    //   // console.log({error});
-    //   if (error.code === '23505') {
-    //     console.log("here");
+      // TODO: argon2
+      // TODO: validation
+      // TODO: exception handling
+      // TODO: login
+      // TODO: update password
+    } catch (error) {
+      // console.log({error});
+      if (error.code === '23505') {
         
-    //     throw new ConflictException("Username not available")
-    //   } else {
-    //     throw new InternalServerErrorException();
-    //   }
-    // }
+        // throw new ConflictException("Username not available")
+        return {msg: error.message, statusCode: error.code, success: false}
+      } else {
+        // throw new InternalServerErrorException();
+        return {msg: error.message, statusCode: 500, success: false}
+      }
+    }
   }
 
   // create(createUserDto: RegisterUserDto) {
