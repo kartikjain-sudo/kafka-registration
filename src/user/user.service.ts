@@ -1,10 +1,11 @@
-import { ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { userEntity } from './entities/user.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import isEmail from 'validator/lib/isEmail';
 import * as argon2 from 'argon2';
 
 @Injectable()
@@ -19,6 +20,8 @@ export class UserService {
 
   async register(registerUser: RegisterUserDto): Promise<any> {
     const { email, dob, username, password } = registerUser;
+
+    const emailCheck = isEmail(email);
     
     const user = new userEntity();
 
@@ -28,6 +31,10 @@ export class UserService {
     user.password = password;
  
     try {
+
+      if (!emailCheck) {
+        throw new NotAcceptableException("Username not available")
+      }
       
       await this.repository.save(user);
 
@@ -42,11 +49,11 @@ export class UserService {
       // console.log({error});
       if (error.code === '23505') {
         
-        // throw new ConflictException("Username not available")
-        return {msg: error.message, statusCode: error.code, success: false}
+        throw new ConflictException("Username not available")
+        // return {msg: error.message, statusCode: error.code, success: false}
       } else {
-        // throw new InternalServerErrorException();
-        return {msg: error.message, statusCode: 500, success: false}
+        throw new InternalServerErrorException();
+        // return {msg: error.message, statusCode: 500, success: false}
       }
     }
   }
