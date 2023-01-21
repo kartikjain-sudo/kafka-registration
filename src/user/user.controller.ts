@@ -10,7 +10,12 @@ export class UserController {
 
   @MessagePattern('register_user')
   async register(registerUserDto: RegisterUserDto): Promise<any> {
-      return this.userService.register(registerUserDto);
+    try {
+      const res = await this.userService.register(registerUserDto);
+      return res;
+    } catch (error) {
+      return {msg: error.message, statusCode: error.code, success: false}
+    }
   }
 
   @MessagePattern('update_user_password')
