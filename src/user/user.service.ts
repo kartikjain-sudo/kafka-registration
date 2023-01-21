@@ -1,10 +1,12 @@
-import { ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
 import { userEntity } from './entities/user.entity';
 import { NotificationService } from 'src/notification/notification.service';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import isEmail from 'validator/lib/isEmail';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -16,12 +18,10 @@ export class UserService {
       private readonly notificationService: NotificationService
     ) {}
 
-  async register(registerUser: RegisterUserDto): Promise<boolean> {
+  async register(registerUser: RegisterUserDto): Promise<any> {
     const { email, dob, username, password } = registerUser;
 
-    let duplicate = await this.repository.find({
-      where: { username: username}
-    })
+    const emailCheck = isEmail(email);
     
     const user = new userEntity();
 
@@ -30,25 +30,69 @@ export class UserService {
     user.username = username;
     user.password = password;
  
-    // try {
-      console.log("i am here");
+    try {
+
+      if (!emailCheck) {
+        throw new NotAcceptableException("Username not available")
+      }
       
       await this.repository.save(user);
 
       this.notificationService.sendMail(user.email);
 
-      return true;
+      // return email;
+      return {msg: email, statusCode: 201, success: true}
 
-    // } catch (error) {
-    //   // console.log({error});
-    //   if (error.code === '23505') {
-    //     console.log("here");
+      // TODO: validation
+      // TODO: login
+    } catch (error) {
+      // console.log({error});
+      if (error.code === '23505') {
         
-    //     throw new ConflictException("Username not available")
-    //   } else {
-    //     throw new InternalServerErrorException();
-    //   }
-    // }
+        throw new ConflictException("Username not available")
+        // return {msg: error.message, statusCode: error.code, success: false}
+      } else {
+        throw new InternalServerErrorException();
+        // return {msg: error.message, statusCode: 500, success: false}
+      }
+    }
+  }
+
+  async updatePassword(updatePasswordDto: UpdatePasswordDto): Promise<any> {
+    const { username, currentPassword, newPassword } = updatePasswordDto;
+
+    let element = await this.repository.findOne({
+      where: { username: username}
+    })
+
+    try {
+
+      if (element !== null) {
+
+        const match = await argon2.verify(element.password, currentPassword);
+
+        if (match) {
+          element.password = await argon2.hash(newPassword, {
+            type: argon2.argon2d,
+            memoryCost: 2 ** 16,
+            hashLength: 50,
+          });
+
+          await this.repository.save(element)
+
+          return {msg: "Password Updated", statusCode: 201, success: true}
+
+        } else {
+          return {msg: "Invalid Password", statusCode: 201, success: true}
+        }
+    } else {
+      return {msg: "Invalid Username", statusCode: 201, success: true}
+    }
+
+
+    } catch (error) {
+      return {msg: error.message, statusCode: 500, success: false}
+    }
   }
 
   // create(createUserDto: RegisterUserDto) {
